@@ -6,6 +6,11 @@ object Day2 extends App {
       val cnt = password.count(c => c == letter)
       cnt >= min && cnt <= max
     }
+
+    def valid2: Boolean = {
+      val cnt = Seq(min, max).map(p => password.charAt(p-1)).count(c => c == letter)
+      cnt == 1
+    }
   }
 
   object Entry {
@@ -17,6 +22,6 @@ object Day2 extends App {
   }
 
   val lines = Source.fromFile(args(0)).getLines
-  val valid = lines.map(Entry.apply).filter(_.valid)
+  val valid = lines.map(Entry.apply).filter(_.valid2)
   println(valid.size)
 }
