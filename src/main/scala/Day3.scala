@@ -30,6 +30,14 @@ class Trees(file: String) {
 object Day3 extends App {
   val file = args.head
   val trees = new Trees(file)
-  val hit = trees.path(3, 1).count(identity)
-  println(hit)
+  val hit1 = trees.path(3, 1).count(identity)
+
+  val slopes = Seq(
+    (1, 1),
+    (3, 1),
+    (5, 1),
+    (7, 1),
+    (1, 2),
+  )
+  println(slopes.map { case (x, y) => trees.path(x, y).count(identity) }.product)
 }
