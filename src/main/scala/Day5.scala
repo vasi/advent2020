@@ -10,6 +10,11 @@ object Day5 extends App {
     val (rowstr, colstr) = pass.splitAt(7)
     (parse(rowstr, "F", "B"), parse(colstr, "L", "R"))
   }
-  val maxid = positions.map { case(r, c) => 8 * r + c}.max
-  println(maxid)
+  val ids = positions.map { case(r, c) => 8 * r + c}.toSet
+  val maxid = ids.max
+
+  val free = (0 to 1023).filter { i =>
+    ids.contains(i - 1) && ids.contains(i + 1) && !ids.contains(i)
+  }
+  println(free.toList)
 }
