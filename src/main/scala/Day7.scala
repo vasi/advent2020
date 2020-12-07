@@ -36,6 +36,15 @@ object Day7 extends App {
     colorsSeen.toSet - color
   }
 
+  def bagsWithin(rules: Seq[Rule], color: String): Int = {
+    def helper(ruleMap: Map[String, Rule], color: String): Int = {
+      ruleMap(color).inner.map(i => i.count * (1 + helper(ruleMap, i.color))).sum
+    }
+    val byColor = rules.map(r => r.outerColor -> r).toMap
+    helper(byColor, color)
+  }
+
   val rules = Source.fromFile(args.head).getLines.map(Rule.apply).toSeq
-  println(canHold(rules, "shiny gold").size)
+//  println(canHold(rules, "shiny gold").size)
+  println(bagsWithin(rules, "shiny gold"))
 }
