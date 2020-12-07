@@ -1,18 +1,6 @@
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 object Day4 extends App {
-  def split(it: Iterator[String], sep: String): Array[Array[String]] = {
-    val buf = new ArrayBuffer[Array[String]]
-    var rem = it
-    while (rem.nonEmpty) {
-      val (pre, post) = it.span(!_.isEmpty)
-      buf.append(pre.toArray)
-      rem = post.drop(1)
-    }
-    buf.toArray
-  }
-
   val hgtRe = """(\d+)(cm|in)""".r
   val eyes = Set("amb", "blu", "brn", "gry", "grn", "hzl", "oth")
 
@@ -33,7 +21,7 @@ object Day4 extends App {
   val required = Set("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
 
   val lines = Source.fromFile(args.head).getLines
-  val passports = split(lines, "").map { ls =>
+  val passports = Util.splitLines(lines).map { ls =>
     ls.mkString(" ").split(" ").map { pr =>
       pr.split(":") match {
         case Array(k, v) => (k, v)
