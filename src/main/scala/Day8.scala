@@ -11,19 +11,19 @@ object Day8 extends App {
   object Instruction {
     final val InstRe = """(nop|acc|jmp) ([+-]\d+)""".r
 
-    def parse(file: String): Array[Instruction] = Source.fromFile(file).getLines().map { line =>
+    def parse(file: String): Seq[Instruction] = Source.fromFile(file).getLines().map { line =>
       val inst = line match {
         case InstRe(name, arg) => name match {
-          case "nop" => Nop()
+          case "nop" => Nop(arg.toInt)
           case "acc" => Acc(arg.toInt)
           case "jmp" => Jmp(arg.toInt)
         }
       }
       inst.asInstanceOf[Instruction]
-    }.toArray
+    }.toSeq
   }
 
-  case class Nop() extends Instruction {
+  case class Nop(arg: Int) extends Instruction {
     def process(st: State): State = st.copy(pc = st.pc + 1)
   }
   case class Jmp(offset: Int) extends Instruction {
@@ -33,10 +33,10 @@ object Day8 extends App {
     def process(st: State): State = st.copy(pc = st.pc + 1, acc = st.acc + arg)
   }
 
-  def runUntilLoop(insts: Array[Instruction]): State = {
+  def run(insts: Seq[Instruction]): State = {
     var st = State()
     val seen = mutable.Set.empty[Int]
-    while (!seen.contains(st.pc)) {
+    while (st.pc < insts.length && !seen.contains(st.pc)) {
       seen.add(st.pc)
       st = insts(st.pc).process(st)
     }
@@ -44,5 +44,20 @@ object Day8 extends App {
   }
 
   val insts = Instruction.parse(args.head)
-  println(runUntilLoop(insts).acc)
+//  println(run(insts).acc)
+
+  def findBadInst(insts: Seq[Instruction]): (Int, State) = {
+    val newInsts = insts.indices.flatMap { idx =>
+      val change = insts(idx) match {
+        case Acc(_) => None
+        case Nop(arg) => Some(Jmp(arg))
+        case Jmp(arg) => Some(Nop(arg))
+      }
+      change.map(i => idx -> insts.updated(idx, i))
+    }
+    val results = newInsts.map { case (idx, i2s) => idx -> run(i2s) }
+    results.find { case (_, st) => st.pc >= insts.length }.get
+  }
+
+  println(findBadInst(insts))
 }
