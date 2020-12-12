@@ -28,12 +28,42 @@ object Day12 extends App {
         }
     }
   }
-  def manhattan(st: State): Int = st.x.abs + st.y.abs
+
+  case class State2(x: Int = 0, y: Int = 0, dx: Int = 10, dy: Int = 1)
+  def turn(st: State2, degrees: Int): State2 = {
+    val turns = posMod(degrees / 90, 4)
+    var x = st.dx
+    var y = st.dy
+    (1 to turns).foreach { _ =>
+      val tmp = x
+      x = y
+      y = -tmp
+    }
+    st.copy(dx = x, dy = y)
+  }
+
+  def runLine2(st: State2, line: String): State2 = {
+    line match {
+      case LineRe(action, valueStr) =>
+        val value = valueStr.toInt
+        action match {
+          case "N" => st.copy(dy = st.dy + value)
+          case "S" => st.copy(dy = st.dy - value)
+          case "E" => st.copy(dx = st.dx + value)
+          case "W" => st.copy(dx = st.dx - value)
+          case "L" => turn(st, -value)
+          case "R" => turn(st, value)
+          case "F" => st.copy(x = st.x + value * st.dx, y = st.y + value * st.dy)
+        }
+    }
+  }
 
   val lines = Source.fromFile(args.head).getLines()
-  var st = State()
+
+  var st = State2()
   lines.foreach { line =>
-    st = runLine(st, line)
+    st = runLine2(st, line)
+    println(st)
   }
-  println(manhattan(st))
+  println(st.x.abs + st.y.abs)
 }
