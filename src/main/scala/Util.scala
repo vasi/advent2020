@@ -11,4 +11,9 @@ object Util {
     }
     buf.toArray
   }
+  def posMod(n: Int, d: Int): Int = {
+    val m = n % d
+    if (m < 0) m + d
+    else m
+  }
 }

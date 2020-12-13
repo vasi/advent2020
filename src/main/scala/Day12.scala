@@ -1,4 +1,5 @@
 import scala.io.Source
+import Util.posMod
 
 object Day12 extends App {
   final val LineRe = """(.)(\d+)""".r
@@ -6,11 +7,6 @@ object Day12 extends App {
   final val Dirs = Seq((1, 0), (0, -1), (-1, 0), (0, 1))
 
   case class State(x: Int = 0, y: Int = 0, dir: Int = 0)
-  def posMod(n: Int, d: Int): Int = {
-    val m = n % d
-    if (m < 0) m + d
-    else m
-  }
   def runLine(st: State, line: String): State = {
     line match {
       case LineRe(action, valueStr) =>
