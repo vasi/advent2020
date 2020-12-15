@@ -1,20 +1,22 @@
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 object Day15 extends App {
-  def part1(starting: Seq[Int], turn: Int): Seq[Int] = {
-    val turns = ArrayBuffer.empty[Int]
-    for (n <- starting) {
-      turns.append(n)
+  def part1(starting: Seq[Int], turn: Int): Int = {
+    val seen = mutable.Map.empty[Int, Int]
+    var last = 0
+    for ((n, t) <- starting.zipWithIndex) {
+      if (t > 0)
+        seen(last) = t
+      last = n
     }
     for (t <- starting.length until turn) {
-      val l = turns.lastIndexOf(turns.last, turns.length - 2)
-      val n = if (l == -1) 0 else t - l - 1
-      turns.append(n)
+      val n = seen.get(last).fold(0)(t - _)
+      seen(last) = t
+      last = n
     }
-    turns.toSeq
+    last
   }
 
   val starting = args.map(_.toInt)
-  println(part1(starting, 2020).last)
+  println(part1(starting, 30_000_000))
 }
