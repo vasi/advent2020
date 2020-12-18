@@ -1,39 +1,50 @@
 import scala.io.Source
+import scala.collection.BufferedIterator
 
 object Day18 extends App {
-  final val NumRe = """(\d+)""".r
-  final val TokRe = """\d+|[+*()]""".r
+  class Evaluator(precedence: Boolean) {
+    final val NumRe = """(\d+)""".r
+    final val TokRe = """\d+|[+*()]""".r
 
-  def evalNum(it: Iterator[String]): Long = {
-    val n = it.next
-    n match {
-      case "(" => evalSeq(it)
-      case NumRe(n) => n.toLong
-    }
-  }
-
-  def evalSeq(it: Iterator[String]): Long = {
-    var acc = evalNum(it)
-    while (it.hasNext) {
-      val op = it.next()
-      if (op == ")") return acc
-      val n = evalNum(it)
-      op match {
-        case "+" => acc += n
-        case "*" => acc *= n
+    def evalNum(it: BufferedIterator[String]): Long = {
+      val n = it.next
+      n match {
+        case "(" =>
+          val r = evalSeq(it)
+          assert(it.next() == ")")
+          r
+        case NumRe(n) => n.toLong
       }
     }
-    acc
+
+    def evalSeq(it: BufferedIterator[String]): Long = {
+      var acc = evalNum(it)
+      while (it.hasNext) {
+        if (it.head == ")")
+          return acc
+        val n = it.next()
+        n match {
+          case "+" =>
+            val m = evalNum(it)
+            acc += m
+          case "*" =>
+            val m = if (precedence) evalSeq(it) else evalNum(it)
+            acc *= m
+        }
+      }
+      acc
+    }
+
+    def evalStr(s: String): Long = {
+      evalSeq(TokRe.findAllIn(s).iterator.buffered)
+    }
   }
 
-  def evalStr(s: String): Long = {
-    evalSeq(TokRe.findAllIn(s).iterator)
-  }
-
-  def part1(lines: Iterator[String]): Long = {
-    lines.map(evalStr).sum
+  def run(lines: Iterator[String], precedence: Boolean): Long = {
+    val ev = new Evaluator(precedence = precedence)
+    lines.map(ev.evalStr).sum
   }
 
   val lines = Source.fromFile(args.head).getLines
-  println(part1(lines))
+  println(run(lines, precedence = true))
 }
