@@ -29,6 +29,12 @@ object Day19 extends App {
 
   case class Input(rules: Map[Int, Rule], strings: Seq[String]) {
     def matches(rule: Int, s: String): Boolean = rules(rule).matchLen(rules, s).contains(s.length)
+    def matchCount(rule: Int): Int = strings.count(s => matches(rule, s))
+
+    def forPart2: Input = copy(rules = rules ++ Map(
+      8 -> Disjoint(Sequ(42), Sequ(42, 8)),
+      11 -> Disjoint(Sequ(42, 31), Sequ(42, 11, 31))
+    ))
   }
   object Input {
     final val RuleRe = """\A(\d+): (.*)\z""".r
@@ -54,8 +60,6 @@ object Day19 extends App {
     }
   }
 
-  def part1(input: Input): Int = input.strings.count(s => input.matches(0, s))
-
   val input = Input.parse(args.head)
-  println(part1(input))
+  println(input.forPart2.matchCount(0))
 }
