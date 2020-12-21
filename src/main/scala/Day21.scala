@@ -22,8 +22,20 @@ object Day21 extends App {
       val possible = possibleIngredients
       foods.flatMap(_.ingredients).count(i => !possible.contains(i))
     }
+    def actualMapping: Map[String, String] = {
+      val possible = possibleMapping.view.mapValues(_.to(collection.mutable.Set)).to(collection.mutable.Map)
+      val m = collection.mutable.Map.empty[String, String]
+      while (possible.nonEmpty) {
+        val found = possible.find(_._2.size == 1).get._1
+        m(found) = possible(found).head
+        possible.remove(found)
+        possible.foreach { case (_, v) => v.remove(m(found)) }
+      }
+      m.toMap
+    }
+    def part2: String = actualMapping.toSeq.sortBy(_._1).map(_._2).mkString(",")
   }
 
   val input = Input.parse(args.head)
-  println(input.part1)
+  println(input.part2)
 }
