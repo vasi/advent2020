@@ -18,15 +18,46 @@ object Day22 extends App {
   }
 
   class Combat {
-    def iWinRound(me: Deck, crab: Deck): Boolean = me.head > crab.head
+    def iWinRound(me: Deck, crab: Deck, code: String): Boolean = {
+      me.head > crab.head
+    }
+
+    def gameCode(me: Deck, crab: Deck): String = Seq(me, crab).map(_.map(_.toString).mkString(",")).mkString("/")
 
     def play(me: Deck, crab: Deck): Unit = {
+      val seen = mutable.Set.empty[String]
       while (me.nonEmpty && crab.nonEmpty) {
-        if (iWinRound(me, crab))
+        val code = gameCode(me, crab)
+        if (!seen.add(code)) {
+          me.appendAll(crab)
+          crab.clear()
+          return
+        }
+        if (iWinRound(me, crab, code))
           me.append(me.removeHead()).append(crab.removeHead())
         else
           crab.append(crab.removeHead()).append(me.removeHead())
       }
+    }
+
+    def iWinGame(me: Deck, crab: Deck): Boolean = {
+      play(me, crab)
+      me.nonEmpty
+    }
+  }
+
+  class RecursiveCombat extends Combat {
+    val iWinCache = mutable.Map.empty[String, Boolean]
+
+    override def iWinRound(me: Deck, crab: Deck, code: String): Boolean = {
+      iWinCache.getOrElseUpdate(code, {
+        if (me.size > me.head && crab.size > crab.head) {
+          val nextMe = me.slice(1, 1 + me.head)
+          val nextCrab = crab.slice(1, 1 + crab.head)
+          iWinGame(nextMe, nextCrab)
+        }
+        else me.head > crab.head
+      })
     }
   }
 
@@ -36,7 +67,7 @@ object Day22 extends App {
   }
 
   val (me, crab) = parse(args.head)
-  val combat = new Combat
+  val combat = new RecursiveCombat
   combat.play(me, crab)
   println(score(me, crab))
 }
