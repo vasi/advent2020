@@ -6,7 +6,7 @@ object Day22 extends App {
 
   final val PlayerRe = """Player (\d+):""".r
   final val CardRe = """(\d+)""".r
-  def parse(file: String): Seq[Deck] = {
+  def parse(file: String): (Deck, Deck) = {
     val decks = (1 to 2).map(_ => mutable.ArrayDeque.empty[Int])
     var deck = -1
     Source.fromFile(file).getLines.foreach {
@@ -14,21 +14,29 @@ object Day22 extends App {
       case PlayerRe(p) => deck = p.toInt - 1
       case CardRe(c) => decks(deck).append(c.toInt)
     }
-    decks
+    (decks(0), decks(1))
   }
 
-  def play(decks: Seq[Deck]): Unit = {
-    while (!decks.exists(_.isEmpty)) {
-      val w = decks.indices.maxBy(i => decks(i).head)
-      decks(w).append(decks(w).removeHead())
-      decks.indices.filterNot(_ == w).foreach(i => decks(w).append(decks(i).removeHead()))
+  class Combat {
+    def iWinRound(me: Deck, crab: Deck): Boolean = me.head > crab.head
+
+    def play(me: Deck, crab: Deck): Unit = {
+      while (me.nonEmpty && crab.nonEmpty) {
+        if (iWinRound(me, crab))
+          me.append(me.removeHead()).append(crab.removeHead())
+        else
+          crab.append(crab.removeHead()).append(me.removeHead())
+      }
     }
   }
-  def part1(decks: Seq[Deck]): Int = {
-    play(decks)
-    decks.find(_.nonEmpty).get.reverse.zipWithIndex.map { case (c, i) => c * (i+1) }.sum
+
+  def score(me: Deck, crab: Deck): Int = {
+    val d = if (me.nonEmpty) me else crab
+      d.reverse.zipWithIndex.map { case (c, i) => c * (i+1) }.sum
   }
 
-  val decks = parse(args.head)
-  println(part1(decks))
+  val (me, crab) = parse(args.head)
+  val combat = new Combat
+  combat.play(me, crab)
+  println(score(me, crab))
 }
